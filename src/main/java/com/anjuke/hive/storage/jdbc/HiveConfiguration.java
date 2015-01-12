@@ -1,7 +1,9 @@
 package com.anjuke.hive.storage.jdbc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -19,28 +21,80 @@ public class HiveConfiguration {
 
     public static final String JDBC_DRIVER_CLASS = "";
 
-    public static final String DBCP_CONFIG_PREFIX = ""; 
+    public static final String DBCP_CONFIG_PREFIX = "";
     
-    public static List<String> getDBSelectFields(Configuration conf, List<String> hiveColumns) {
-        conf.get("");
-        return hiveColumns;
+    public static final String COLUMN_MAP = "";
+    
+    private Configuration conf;
+    
+    private static Map<Configuration, HiveConfiguration> instances = new HashMap<Configuration, HiveConfiguration>();
+    
+    public static HiveConfiguration getInstance(Configuration conf) {
+        if (instances.get(conf) == null) {
+            instances.put(conf, new HiveConfiguration(conf));
+        }
+        
+        return instances.get(conf);
     }
     
-    public static String getSplitedBy(Configuration conf) {
+    private HiveConfiguration(Configuration conf) {
+        this.conf = conf;
+    }
+    
+    public List<String> getDBSelectFields(List<String> hiveColumns) {
+        Map<String, String> columnMap = getColumnMap();
+        if (columnMap == null || columnMap.isEmpty()) {
+            return hiveColumns;
+        }
+        
+        List<String> dbFields = new ArrayList<String>(hiveColumns.size());
+        for (String field : hiveColumns) {
+            if(columnMap.get(field) != null) {
+                field = columnMap.get(field);
+            }
+            
+            dbFields.add(field);
+        }
+        
+        return dbFields;
+    }
+    
+    public String getSplitedBy() {
         return conf.get(CONF_SPLITEDBY);
     }
     
-    public static long getBlockSize(Configuration conf) {
+    public long getBlockSize() {
         return conf.getLong("dfs.blocksize", 67108864);
     }
     
-    public static ExprNodeDesc getExpNodeDesc (Configuration conf) {
+    public ExprNodeDesc getExpNodeDesc () {
         String filterXml = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
         return Utilities.deserializeExpression(filterXml, conf);
     }
     
-    public static List<String> getHiveSelectedColumns(Configuration conf) {
-     // current hive query selected column id.
+    public Map<String, String> getColumnMap() {
+        String columnMapStr = conf.get(COLUMN_MAP);
+        if (Util.isEmpty(columnMapStr)) {
+            return null;
+        }
+        
+        String[] _tmps = columnMapStr.split(",");
+        
+        Map<String, String> map = new HashMap<String, String>(_tmps.length);
+        for (String _tmp : _tmps) {
+            int pos = _tmp.indexOf('=');
+            if (pos == -1) {
+                continue;
+            }
+            
+            map.put(_tmp.substring(0, pos), _tmp.substring(pos+1));
+        }
+        
+        return map;
+    }
+    
+    public List<String> getHiveSelectedColumns() {
+        // current hive query selected column id.
         String columnsStr = conf.get(org.apache.hadoop.hive.serde2.ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
         
         // all hive columns and column types.

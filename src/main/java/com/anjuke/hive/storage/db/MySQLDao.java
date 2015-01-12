@@ -206,6 +206,7 @@ public class MySQLDao implements Dao {
         return bound;
     }
     
+    @Override
     public JdbcRecordIterator getRecordIterator() {
         try {
             

@@ -37,6 +37,6 @@ public interface Dao {
 
     /* 获得一行数据的大小  */
     public int getRowDataLength();
-
-
+    
+    public JdbcRecordIterator getRecordIterator();
 }

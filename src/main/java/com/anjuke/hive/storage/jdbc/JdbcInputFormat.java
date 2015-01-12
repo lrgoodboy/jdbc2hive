@@ -26,11 +26,13 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
 
     @Override
     public InputSplit[] getSplits(JobConf conf, int num) throws IOException {
+        HiveConfiguration hiveConf = HiveConfiguration.getInstance(conf);
         Dao dao = DaoFactory.getDao(conf);
-        Bound bound = new Bound(HiveConfiguration.getSplitedBy(conf));
         
-        dao.setExpnode(HiveConfiguration.getExpNodeDesc(conf));
-        dao.setSelectFields(HiveConfiguration.getDBSelectFields(conf, HiveConfiguration.getHiveSelectedColumns(conf)));
+        Bound bound = new Bound(hiveConf.getSplitedBy());
+        
+        dao.setExpnode(hiveConf.getExpNodeDesc());
+        dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
         
         bound = dao.getConditionBound(bound);
         
@@ -39,7 +41,7 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         
         Splitter splitter = SplitterFactory.getSplitter(bound);
         
-        return (InputSplit[]) splitter.getSplits(totalRows, rowLenth, bound, HiveConfiguration.getBlockSize(conf)).toArray();
+        return (InputSplit[]) splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize()).toArray();
     }
 
 }

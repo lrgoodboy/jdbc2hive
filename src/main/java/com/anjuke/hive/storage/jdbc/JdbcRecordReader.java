@@ -1,16 +1,20 @@
 package com.anjuke.hive.storage.jdbc;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.InputSplit;
 
 import com.anjuke.hive.storage.db.Dao;
 import com.anjuke.hive.storage.db.DaoFactory;
+import com.anjuke.hive.storage.db.JdbcRecordIterator;
 
 public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>  {
     
@@ -28,18 +32,38 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     
     private Reporter reporter; 
     
+    private JdbcRecordIterator iterator;
+    
+    private long pos = 0;
+    
     @Override
     public boolean next(LongWritable key, MapWritable value) throws IOException {
         // use split to generate RecorderReader to
         
-        if (dao == null) {
+        if (iterator == null) {
             dao = DaoFactory.getDao(conf);
-            
-            dao.setExpnode(HiveConfiguration.getExpNodeDesc(conf));
-            dao.setSelectFields(HiveConfiguration.getDBSelectFields(conf, HiveConfiguration.getHiveSelectedColumns(conf)));
+            HiveConfiguration hiveConf = HiveConfiguration.getInstance(conf);
+            dao.setExpnode(hiveConf.getExpNodeDesc());
+            dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
             dao.setSplit(split);
             
-            //dao.setFetchBound(split.getBound())
+            iterator = dao.getRecordIterator();
+        }
+        
+        if (iterator.hasNext()) {
+            Map<String, String> dbValues = iterator.next();
+            
+            if ((dbValues != null) && (!dbValues.isEmpty())) {
+                key.set(++pos);
+                
+                for (Entry<String, String> entry : dbValues.entrySet()) {
+                    value.put(new Text(entry.getKey()), new Text(entry.getValue()));
+                }
+                
+                return true;
+            }
+            
+            return false;
         }
         
         return false;
