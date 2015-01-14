@@ -13,17 +13,17 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class HiveConfiguration {
     
-    public final static String CONF_TABLENAME = "";
+    public final static String TABLENAME = "jdbc2hive.table.name";
     
-    public final static String CONF_SPLITEDBY = "splited.by";
+    public final static String SPLITEDBY = "jdbc2hive.splited.by";
 
-    public static final String JDBC_URL = "";
+    public static final String JDBC_URL = "jdbc2hive.jdbc.url";
 
-    public static final String JDBC_DRIVER_CLASS = "";
+    public static final String JDBC_DRIVER_CLASS = "jdbc2hive.jdbc.class";
 
-    public static final String DBCP_CONFIG_PREFIX = "";
+    public static final String DBCP_CONFIG_PREFIX = "jdbc2hive.dhcp";
     
-    public static final String COLUMN_MAP = "";
+    public static final String COLUMN_MAP = "jdbc2hive.column.map";
     
     private Configuration conf;
     
@@ -60,7 +60,7 @@ public class HiveConfiguration {
     }
     
     public String getSplitedBy() {
-        return conf.get(CONF_SPLITEDBY);
+        return conf.get(SPLITEDBY);
     }
     
     public long getBlockSize() {

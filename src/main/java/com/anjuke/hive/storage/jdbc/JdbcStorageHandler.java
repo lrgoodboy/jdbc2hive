@@ -13,17 +13,17 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.OutputFormat;
 
 public class JdbcStorageHandler implements HiveStorageHandler {
+    
+    private Configuration conf;
 
     @Override
     public Configuration getConf() {
-        // TODO Auto-generated method stub
-        return null;
+        return conf;
     }
 
     @Override
-    public void setConf(Configuration arg0) {
-        // TODO Auto-generated method stub
-        
+    public void setConf(Configuration conf) {
+        this.conf = conf;
     }
 
     @Override
@@ -55,6 +55,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
         return null;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Class<? extends InputFormat> getInputFormatClass() {
         return JdbcInputFormat.class;
@@ -65,6 +66,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
         return null;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public Class<? extends OutputFormat> getOutputFormatClass() {
         return JdbcOutputFormat.class;

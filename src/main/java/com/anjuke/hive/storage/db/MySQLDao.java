@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.mockito.internal.util.reflection.Fields;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.anjuke.hive.storage.jdbc.Bound;
 import com.anjuke.hive.storage.jdbc.JdbcInputSplit;
@@ -18,18 +20,14 @@ import com.anjuke.hive.storage.jdbc.Util;
 public class MySQLDao implements Dao {
     
     private List<String> selectFields;
-    
     private String selectFieldsStr;
-    
     private String condition;
-    
     private ExprNodeDesc conditionNode;
-    
     private Connection connection;
-    
     private String tableName;
-    
     private JdbcInputSplit split;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(MySQLDao.class);
 
     @Override
     public void setExpnode(ExprNodeDesc conditionNode) {
@@ -118,19 +116,22 @@ public class MySQLDao implements Dao {
         long rows = 0;
         
         try {
-            PreparedStatement ps = connection.prepareStatement(
-                    "EXPLAIN SELECT " + this.selectFieldsStr 
-                    + " FROM " + this.tableName + " " + buildWhere(getBaseCondition()));
+            String sql = "EXPLAIN SELECT " + this.selectFieldsStr 
+                    + " FROM " + this.tableName + " " + buildWhere(getBaseCondition());
+            LOG.info("affected rows sql : " + sql);
+            
+            PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
-            
-            rows = rs.getLong(9);
-            
+            if (rs.next()) {
+                rows = rs.getLong(9);
+            }
             rs.close();
             ps.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         
+        LOG.info("affected rows : " + rows);
         return rows;
     }
 
@@ -141,15 +142,62 @@ public class MySQLDao implements Dao {
         int length = 0;
         
         try {
-            PreparedStatement ps = connection.prepareStatement(
-                    "SELECT " + this.selectFieldsStr 
-                    + " FROM " + this.tableName + " LIMIT 1");
+            String sql = "SELECT " + this.selectFieldsStr 
+                    + " FROM " + this.tableName + " LIMIT 1";
+            LOG.info("detect rowdata length sql : " + sql);
+            
+            PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
             
             for (int i=1; i<=columnCount; i++) {
-                length += metaData.getColumnDisplaySize(i);
+                switch (metaData.getColumnType(i)) {
+                case Types.BIGINT:
+                    length += 8;
+                    break;
+                    
+                case Types.INTEGER:
+                    length += 4;
+                    break;
+                    
+                case Types.SMALLINT:
+                    length += 2;
+                    break;
+                    
+                case Types.TINYINT:
+                    length += 1;
+                    break;
+                    
+                case Types.FLOAT:
+                case Types.DOUBLE:
+                    length += 4;
+                    break;
+                    
+                case Types.DECIMAL:
+                    length += 8;
+                    break;
+                    
+                case Types.CHAR:
+                case Types.VARCHAR:
+                case Types.LONGVARCHAR:
+                    length += metaData.getColumnDisplaySize(i) * 3;
+                    break;
+                    
+                case Types.TIME:
+                case Types.DATE:
+                    length += 3;
+                    break;
+
+                case Types.TIMESTAMP:
+                    length += 4;
+                    break;
+                    
+                default: 
+                    length += metaData.getColumnDisplaySize(i);
+                    break;
+                }
+                
             }
             
             rs.close();
@@ -159,6 +207,7 @@ public class MySQLDao implements Dao {
             length = selectFields.size() * 10;
         }
         
+        LOG.info("row length: " + length);
         return length;
     }
 
