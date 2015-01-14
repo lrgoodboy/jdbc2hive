@@ -7,6 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.mockito.internal.util.reflection.Fields;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.anjuke.hive.storage.jdbc.Bound;
 import com.anjuke.hive.storage.jdbc.JdbcInputSplit;
 import com.anjuke.hive.storage.jdbc.Util;
+import com.anjuke.hive.storage.parser.NodeProcessor;
 
 public class MySQLDao implements Dao {
     
@@ -30,8 +32,17 @@ public class MySQLDao implements Dao {
     private static final Logger LOG = LoggerFactory.getLogger(MySQLDao.class);
 
     @Override
-    public void setExpnode(ExprNodeDesc conditionNode) {
+    public void setConditionNode(ExprNodeDesc conditionNode, Map<String, String> columnMap) {
         this.conditionNode = conditionNode;
+        
+        // in fact, every database has related NodeProcessor.
+        ExprNodeDesc parsedNode = NodeProcessor
+                .getNodeProcessor(conditionNode)
+                .parseNode(conditionNode, columnMap, 0);
+        
+        if (parsedNode != null) {
+            this.condition = parsedNode.toString();
+        }
     }
 
     @Override

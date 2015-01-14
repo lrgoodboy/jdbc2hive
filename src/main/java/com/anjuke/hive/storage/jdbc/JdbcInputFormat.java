@@ -3,6 +3,7 @@ package com.anjuke.hive.storage.jdbc;
 import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.mapred.InputSplit;
@@ -12,14 +13,14 @@ import org.apache.hadoop.mapred.Reporter;
 
 import com.anjuke.hive.storage.db.Dao;
 import com.anjuke.hive.storage.db.DaoFactory;
+import com.anjuke.hive.storage.parser.NodeProcessor;
 import com.anjuke.hive.storage.splitter.Splitter;
 import com.anjuke.hive.storage.splitter.SplitterFactory;
 
 public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable> {
 
-    @SuppressWarnings("unchecked")
     @Override
-    public RecordReader getRecordReader(InputSplit split, JobConf conf,
+    public RecordReader<LongWritable, MapWritable> getRecordReader(InputSplit split, JobConf conf,
             Reporter reporter) throws IOException {
         return new JdbcRecordReader(split, conf, reporter);
     }
@@ -29,11 +30,10 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         HiveConfiguration hiveConf = HiveConfiguration.getInstance(conf);
         Dao dao = DaoFactory.getDao(conf);
         
-        Bound bound = new Bound(hiveConf.getSplitedBy());
-        
-        dao.setExpnode(hiveConf.getExpNodeDesc());
+        dao.setConditionNode(hiveConf.getExpNodeDesc(), hiveConf.getColumnMap());
         dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
         
+        Bound bound = new Bound(hiveConf.getSplitedBy());
         bound = dao.getConditionBound(bound);
         
         long totalRows = dao.getAffetcedRows();

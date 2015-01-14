@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
@@ -15,6 +16,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import com.anjuke.hive.storage.db.Dao;
 import com.anjuke.hive.storage.db.DaoFactory;
 import com.anjuke.hive.storage.db.JdbcRecordIterator;
+import com.anjuke.hive.storage.parser.NodeProcessor;
 
 public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>  {
     
@@ -38,12 +40,13 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     
     @Override
     public boolean next(LongWritable key, MapWritable value) throws IOException {
-        // use split to generate RecorderReader to
-        
+        // use split to generate RecorderReader to read data
         if (iterator == null) {
             dao = DaoFactory.getDao(conf);
             HiveConfiguration hiveConf = HiveConfiguration.getInstance(conf);
-            dao.setExpnode(hiveConf.getExpNodeDesc());
+
+            dao.setTableName(hiveConf.getTableName());
+            dao.setConditionNode(hiveConf.getExpNodeDesc(), hiveConf.getColumnMap());
             dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
             dao.setSplit(split);
             

@@ -72,6 +72,10 @@ public class HiveConfiguration {
         return conf.get(SPLITEDBY);
     }
     
+    public String getTableName() {
+        return conf.get(TABLENAME);
+    }
+    
     public long getBlockSize() {
         return conf.getLong("dfs.blocksize", 67108864);
     }
