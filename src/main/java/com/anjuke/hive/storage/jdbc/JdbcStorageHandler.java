@@ -27,31 +27,24 @@ public class JdbcStorageHandler implements HiveStorageHandler {
     }
 
     @Override
-    public void configureInputJobProperties(TableDesc arg0,
-            Map<String, String> arg1) {
-        // TODO Auto-generated method stub
-        
+    public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+        HiveConfiguration.copyJDBCProperties(tableDesc, jobProperties);
     }
 
     @Override
-    public void configureOutputJobProperties(TableDesc arg0,
-            Map<String, String> arg1) {
-        // TODO Auto-generated method stub
-        
+    public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+        HiveConfiguration.copyJDBCProperties(tableDesc, jobProperties);
     }
 
     @Override
     @Deprecated
-    public void configureTableJobProperties(TableDesc arg0,
-            Map<String, String> arg1) {
-        // TODO Auto-generated method stub
-        
+    public void configureTableJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+        HiveConfiguration.copyJDBCProperties(tableDesc, jobProperties);
     }
 
     @Override
     public HiveAuthorizationProvider getAuthorizationProvider()
             throws HiveException {
-        // TODO Auto-generated method stub
         return null;
     }
 

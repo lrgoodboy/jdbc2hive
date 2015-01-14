@@ -2,28 +2,37 @@ package com.anjuke.hive.storage.jdbc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 
 public class HiveConfiguration {
     
     public final static String TABLENAME = "jdbc2hive.table.name";
-    
     public final static String SPLITEDBY = "jdbc2hive.splited.by";
-
     public static final String JDBC_URL = "jdbc2hive.jdbc.url";
-
     public static final String JDBC_DRIVER_CLASS = "jdbc2hive.jdbc.class";
-
     public static final String DBCP_CONFIG_PREFIX = "jdbc2hive.dhcp";
-    
     public static final String COLUMN_MAP = "jdbc2hive.column.map";
+    
+    public static final Set<String> REQUIRED_CONF = new HashSet<String>();
+    static {
+        REQUIRED_CONF.add(TABLENAME);
+        REQUIRED_CONF.add(SPLITEDBY);
+        REQUIRED_CONF.add(JDBC_URL);
+        REQUIRED_CONF.add(JDBC_DRIVER_CLASS);
+        
+    }
     
     private Configuration conf;
     
@@ -117,6 +126,27 @@ public class HiveConfiguration {
         } else {
             return null;
         }
+    }
+    
+    public static void copyJDBCProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
+        Properties tableProp = tableDesc.getProperties();
+        
+        for (String requiredField : REQUIRED_CONF) {
+            if (Util.isEmpty(tableProp.getProperty(requiredField))) {
+                throw new IllegalArgumentException("Property " + requiredField + " is required.");
+            }
+        }
+        
+        for (Entry<Object, Object> entry : tableProp.entrySet()) {
+            jobProperties.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        
+        /*for (String configKey : DEFAULT_REQUIRED_PROPERTIES) {
+            String propertyKey = configKey.getPropertyName();
+            if ((props == null) || (!props.containsKey(propertyKey)) || (isEmptyString(props.getProperty(propertyKey)))) {
+                throw new IllegalArgumentException("Property " + propertyKey + " is required.");
+            }
+        }*/
     }
 
 }

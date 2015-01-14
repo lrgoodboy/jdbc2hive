@@ -11,10 +11,10 @@ import com.anjuke.hive.storage.jdbc.JdbcInputSplit;
 public class LongSplitter implements Splitter {
 
     @Override
-    public List<InputSplit> getSplits(long totalRows, int rowLenth, Bound bound, long blockSize) {
+    public List<JdbcInputSplit> getSplits(long totalRows, int rowLenth, Bound bound, long blockSize) {
         
-        long lower = (Long)(bound.getLower());
-        long upper = (Long)(bound.getUpper());
+        long lower = Long.parseLong(bound.getLower().toString());
+        long upper = Long.parseLong(bound.getUpper().toString());
         
         if (totalRows == 0) {
             totalRows = upper - lower;
@@ -22,7 +22,7 @@ public class LongSplitter implements Splitter {
         
         int numSplits = (int) (totalRows * rowLenth / blockSize);
         
-        List<InputSplit> splits = new ArrayList<InputSplit>();
+        List<JdbcInputSplit> splits = new ArrayList<JdbcInputSplit>();
         if (numSplits <= 1) {
             JdbcInputSplit split = new JdbcInputSplit();
             split.setLowerCause(null);

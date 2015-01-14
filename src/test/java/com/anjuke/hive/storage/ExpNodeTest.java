@@ -23,26 +23,54 @@ import com.anjuke.hive.storage.parser.NodeProcessor;
 public class ExpNodeTest {
     
     private String exp1xml = "";
+    private String exp2xml = "";
     
     @Before
     public void testRead() throws IOException {
+        String tmp;
         InputStream ins = Thread.currentThread().getContextClassLoader().getResourceAsStream("expnode1.xml");
         BufferedReader bf = new BufferedReader(new InputStreamReader(ins, "utf-8"));
         
         exp1xml = "";
-        String tmp;
         while ((tmp = bf.readLine()) != null) {
             exp1xml += tmp;
         }
+        
+        bf.close();
+        ins.close();
+        
+        ins = Thread.currentThread().getContextClassLoader().getResourceAsStream("expnode2.xml");
+        bf = new BufferedReader(new InputStreamReader(ins, "utf-8"));
+        
+        exp2xml = "";
+        while ((tmp = bf.readLine()) != null) {
+            exp2xml += tmp;
+        }
+        
         bf.close();
         ins.close();
     }
     
     @Test
-    public void testDeserialized() {
+    public void testDeserialized1() {
         Configuration conf = new Configuration();
         
         ExprNodeDesc expNode = Utilities.deserializeExpression(exp1xml, conf);
+        walkNode(expNode, 0);
+        assertNotNull(expNode);
+        
+        System.out.println("after parse");
+        
+        ExprNodeDesc newExpNode = NodeProcessor.getNodeProcessor(expNode).parseNode(expNode, null, 0);
+        walkNode(newExpNode, 0);
+        assertNotNull(newExpNode);
+    }
+    
+    @Test
+    public void testDeserialized2() {
+        Configuration conf = new Configuration();
+        
+        ExprNodeDesc expNode = Utilities.deserializeExpression(exp2xml, conf);
         walkNode(expNode, 0);
         assertNotNull(expNode);
         

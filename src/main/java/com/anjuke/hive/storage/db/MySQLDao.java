@@ -226,15 +226,16 @@ public class MySQLDao implements Dao {
         
         try {
             String boundField = "`" + bound.getField() + "`";
-            PreparedStatement ps = connection.prepareStatement(
-                    "(SELECT " + boundField 
+            String sql = "(SELECT " + boundField 
                     + " FROM " + this.tableName + " " + buildWhere(getBaseCondition())
                     + " ORDER BY " + boundField + " DESC LIMIT 1)"
-                    + " UNOIN ALL"
+                    + " UNION ALL"
                     + "(SELECT " + boundField 
                     + " FROM " + this.tableName + " " + buildWhere(getBaseCondition())
-                    + " ORDER BY " + boundField + " ASC LIMIT 1)"
-                    );
+                    + " ORDER BY " + boundField + " ASC LIMIT 1)";
+            LOG.info(sql);
+            
+            PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
