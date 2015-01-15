@@ -58,6 +58,7 @@ public class HiveConfiguration {
         
         List<String> dbFields = new ArrayList<String>(hiveColumns.size());
         for (String field : hiveColumns) {
+            field = field.trim();
             if(columnMap.get(field) != null) {
                 field = columnMap.get(field);
             }
@@ -100,7 +101,7 @@ public class HiveConfiguration {
                 continue;
             }
             
-            map.put(_tmp.substring(0, pos), _tmp.substring(pos+1));
+            map.put(_tmp.substring(0, pos).trim(), _tmp.substring(pos+1).trim());
         }
         
         return map;
@@ -123,7 +124,7 @@ public class HiveConfiguration {
             
             for (String _columnStr : columns) {
                 int _columnIdx = Integer.parseInt(_columnStr);
-                selectedColumns.add(hiveColumnsArray[_columnIdx]);
+                selectedColumns.add(hiveColumnsArray[_columnIdx].trim());
             }
             
             return selectedColumns;

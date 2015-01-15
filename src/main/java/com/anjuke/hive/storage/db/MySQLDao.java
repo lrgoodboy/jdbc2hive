@@ -41,7 +41,7 @@ public class MySQLDao implements Dao {
                 .parseNode(conditionNode, columnMap, 0);
         
         if (parsedNode != null) {
-            this.condition = parsedNode.toString();
+            this.condition = parsedNode.getExprString();
         }
     }
 
@@ -274,6 +274,7 @@ public class MySQLDao implements Dao {
             String sql = "SELECT " + this.selectFieldsStr 
                     + " FROM " + this.tableName 
                     + " " + buildWhere(getBaseCondition(), getSplitCondition());
+            LOG.info("getRecordIterator sql : " + sql);
             
             PreparedStatement ps = connection.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();

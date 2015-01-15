@@ -1,6 +1,7 @@
 package com.anjuke.hive.storage.jdbc;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -32,6 +33,7 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         
         dao.setConditionNode(hiveConf.getExpNodeDesc(), hiveConf.getColumnMap());
         dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
+        dao.setTableName(hiveConf.getTableName());
         
         Bound bound = new Bound(hiveConf.getSplitedBy());
         bound = dao.getConditionBound(bound);
@@ -40,8 +42,13 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         int rowLenth = dao.getRowDataLength();
         
         Splitter splitter = SplitterFactory.getSplitter(bound);
+        List<JdbcInputSplit> splits = splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize());
         
-        return (InputSplit[]) splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize()).toArray();
+        if (splits != null) {
+            return (InputSplit[]) (splits.toArray(new InputSplit[splits.size()]));
+        } else {
+            return null;
+        }
     }
 
 }

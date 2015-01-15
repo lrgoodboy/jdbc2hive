@@ -11,10 +11,9 @@ public class SplitterFactory {
         
         case Types.INTEGER:
         case Types.BIGINT:
-            return new LongSplitter();
-            
         case Types.TIMESTAMP:
-            return new DateTimeSplitter();
+            return new LongSplitter();
+            //return new DateTimeSplitter();
         }
         
         return null;
