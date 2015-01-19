@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.anjuke.hive</groupId>
-    <artifactId>hivestoragehandler4jdbc</artifactId>
-    <version>1.1.1-cdh4.3.0-SNAPSHOT</version>
+    <artifactId>jdbc2hive</artifactId>
+    <version>0.10-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>hivestoragehandler4jdbc</name>
+    <name>jdbc2hive</name>
 
     <organization>
         <name>Anjuke</name>

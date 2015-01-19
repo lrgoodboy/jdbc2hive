@@ -15,6 +15,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HiveConfiguration {
     
@@ -35,6 +37,7 @@ public class HiveConfiguration {
     }
     
     private Configuration conf;
+    private static final Logger LOG = LoggerFactory.getLogger(HiveConfiguration.class);
     
     private static Map<Configuration, HiveConfiguration> instances = new HashMap<Configuration, HiveConfiguration>();
     
@@ -51,26 +54,34 @@ public class HiveConfiguration {
     }
     
     public List<String> getDBSelectFields(List<String> hiveColumns) {
-        Map<String, String> columnMap = getColumnMap();
-        if (columnMap == null || columnMap.isEmpty()) {
-            return hiveColumns;
-        }
+        List<String> dbFields = null;
         
-        List<String> dbFields = new ArrayList<String>(hiveColumns.size());
-        for (String field : hiveColumns) {
-            field = field.trim();
-            if(columnMap.get(field) != null) {
-                field = columnMap.get(field);
+        // hive columns is empty, return default splited by field.
+        if (hiveColumns == null || hiveColumns.isEmpty()) {
+            dbFields = new ArrayList<String>(1);
+            dbFields.add(conf.get(SPLITEDBY));
+        } else {
+            Map<String, String> columnMap = getColumnMap();
+            if (columnMap == null || columnMap.isEmpty()) {
+                return hiveColumns;
             }
             
-            dbFields.add(field);
+            dbFields = new ArrayList<String>(hiveColumns.size());
+            for (String field : hiveColumns) {
+                field = field.trim();
+                if(columnMap.get(field) != null) {
+                    field = columnMap.get(field);
+                }
+                
+                dbFields.add(field);
+            }
         }
         
         return dbFields;
     }
     
     public String getSplitedBy() {
-        return conf.get(SPLITEDBY);
+        return conf.get(SPLITEDBY).trim();
     }
     
     public String getTableName() {
@@ -83,6 +94,10 @@ public class HiveConfiguration {
     
     public ExprNodeDesc getExpNodeDesc () {
         String filterXml = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+        if (Util.isEmpty(filterXml)) {
+            return null;
+        }
+        
         return Utilities.deserializeExpression(filterXml, conf);
     }
     
@@ -114,7 +129,7 @@ public class HiveConfiguration {
         // all hive columns and column types.
         String hiveColumns = conf.get(serdeConstants.LIST_COLUMNS);
         String hiveColumnsTypeStr = conf.get(serdeConstants.LIST_COLUMN_TYPES);
-        
+        LOG.debug("hive columns str ", hiveColumns, hiveColumnsTypeStr);
         
         if (columnsStr != null && !columnsStr.trim().isEmpty()) {
             String[] hiveColumnsArray = hiveColumns.split(",");

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.InputSplit;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +26,8 @@ public class DaoTest {
     @Before
     public void initDao() {
         Configuration conf = new Configuration();
-        conf.addResource(Thread.currentThread().getContextClassLoader().getResourceAsStream("jdbc.xml"));
+        
+        conf.addResource(DaoTest.class.getClassLoader().getResourceAsStream("jdbc.xml"));
         
         dao = DaoFactory.getDao(conf);
     }
@@ -33,6 +35,8 @@ public class DaoTest {
     @Test
     public void testDao() {
         assertNotNull(dao);
+        
+        System.out.println(100 % 1);
     }
     
     @Test
@@ -75,7 +79,7 @@ public class DaoTest {
         
         bound = dao.getConditionBound(new Bound("id"));
         
-        List<JdbcInputSplit> splits = splitter.getSplits(affectedRows, dao.getRowDataLength(), bound, 10 * 1024 * 1024);
+        List<JdbcInputSplit> splits = splitter.getSplits(affectedRows, dao.getRowDataLength(), bound, 10 * 1024 * 1024, new Path[]{new Path("/tmp/jdbc2hivetest2")});
         for (JdbcInputSplit split : splits) {
             //System.out.println(split.getLowerCause() + " and " + split.getUpperCause());
             dao.setSplit(split);

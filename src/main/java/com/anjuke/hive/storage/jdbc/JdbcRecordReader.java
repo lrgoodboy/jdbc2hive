@@ -60,7 +60,8 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
                 key.set(++pos);
                 
                 for (Entry<String, String> entry : dbValues.entrySet()) {
-                    value.put(new Text(entry.getKey()), new Text(entry.getValue()));
+                    // hive use lower case column names
+                    value.put(new Text(entry.getKey().toLowerCase()), new Text(entry.getValue()));
                 }
                 
                 return true;

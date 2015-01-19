@@ -3,10 +3,12 @@ package com.anjuke.hive.storage.jdbc;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -41,13 +43,20 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         long totalRows = dao.getAffetcedRows();
         int rowLenth = dao.getRowDataLength();
         
+        Path[] tablePaths = FileInputFormat.getInputPaths(conf);
+        
         Splitter splitter = SplitterFactory.getSplitter(bound);
-        List<JdbcInputSplit> splits = splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize());
+        List<JdbcInputSplit> splits = splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize(), tablePaths);
         
         if (splits != null) {
             return (InputSplit[]) (splits.toArray(new InputSplit[splits.size()]));
         } else {
-            return null;
+            JdbcInputSplit split = new JdbcInputSplit(tablePaths[0]);
+            split.setLowerCause("");
+            split.setUpperCause("");
+            split.setLength(totalRows);
+            
+            return new InputSplit[]{split};
         }
     }
 

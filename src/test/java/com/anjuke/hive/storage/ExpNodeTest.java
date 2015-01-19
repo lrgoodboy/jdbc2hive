@@ -87,7 +87,6 @@ public class ExpNodeTest {
         assertNotNull(newExpNode);
     }
     
-    @Test
     public void testParseDriver() {
         String command = "select * from alog.d_20141110 where hour = 10 ";
         

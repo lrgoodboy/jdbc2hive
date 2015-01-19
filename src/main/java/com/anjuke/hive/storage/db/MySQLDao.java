@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.mockito.internal.util.reflection.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +34,17 @@ public class MySQLDao implements Dao {
     public void setConditionNode(ExprNodeDesc conditionNode, Map<String, String> columnMap) {
         this.conditionNode = conditionNode;
         
-        // in fact, every database has related NodeProcessor.
-        ExprNodeDesc parsedNode = NodeProcessor
-                .getNodeProcessor(conditionNode)
-                .parseNode(conditionNode, columnMap, 0);
-        
-        if (parsedNode != null) {
-            this.condition = parsedNode.getExprString();
+        if (conditionNode != null) {
+            // in fact, every database has related NodeProcessor.
+            ExprNodeDesc parsedNode = NodeProcessor
+                    .getNodeProcessor(conditionNode)
+                    .parseNode(conditionNode, columnMap, 0);
+            
+            if (parsedNode != null) {
+                this.condition = parsedNode.getExprString();
+            }
+        } else {
+            this.condition = "";
         }
     }
 

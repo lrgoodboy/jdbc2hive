@@ -7,11 +7,13 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -33,7 +35,7 @@ public class JdbcInputFormatTest {
     
     @Test
     public void testInput() throws IOException {
-        conf.setInt("dfs.blocksize", 1* 1024*1024);
+        conf.setInt("dfs.blocksize", 100* 1024*1024);
         
         conf.set(org.apache.hadoop.hive.serde2.ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,1,2");
         conf.set(serdeConstants.LIST_COLUMNS, "hive_id, hive_lng, hive_lat");
@@ -41,6 +43,7 @@ public class JdbcInputFormatTest {
         conf.set(TableScanDesc.FILTER_EXPR_CONF_STR, readFile("expnode4.xml"));
         
         conf.set(HiveConfiguration.COLUMN_MAP, "hive_id=id, hive_lng=lng, hive_lat=lat");
+        FileInputFormat.setInputPaths(conf, new Path("/tmp/jdbc2hivetest"));
         
         JdbcInputFormat inputFormat = new JdbcInputFormat();
         
@@ -52,6 +55,7 @@ public class JdbcInputFormatTest {
             System.out.println(jdbcinput.getLowerCause() + " and " + jdbcinput.getUpperCause());
         }
         
+        /*
         RecordReader<LongWritable, MapWritable>  rr = inputFormat.getRecordReader(jdbcinput, conf, null);
         LongWritable key = rr.createKey();
         MapWritable value = rr.createValue();
@@ -62,12 +66,13 @@ public class JdbcInputFormatTest {
                 System.out.println("\t" + entry.getKey() + " = " + entry.getValue());
             }
         }
+        */
     }
     
     
     private String readFile(String fileName) {
         
-        InputStream ins = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
+        InputStream ins = DaoTest.class.getClassLoader().getResourceAsStream(fileName);
         BufferedReader bf;
         String result = "", tmp=null;
         

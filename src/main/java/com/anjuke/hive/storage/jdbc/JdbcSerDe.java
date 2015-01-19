@@ -18,6 +18,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcSerDe  implements SerDe {
     
@@ -25,6 +27,8 @@ public class JdbcSerDe  implements SerDe {
     private List<String> dbColumnNames;
     private List<String> row;
     private int numColumns;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcSerDe.class);
 
     @Override
     public Object deserialize(Writable obj) throws SerDeException {
@@ -32,11 +36,12 @@ public class JdbcSerDe  implements SerDe {
             throw new SerDeException("Expected MapWritable : " + obj.getClass().getName());
         }
         
+        row.clear();
         MapWritable mapObj = (MapWritable) obj;
         Text columnKey = new Text();
 
         for (int i = 0; i < numColumns; i++) {
-            columnKey.set(dbColumnNames.get(i));
+            columnKey.set(dbColumnNames.get(i).toLowerCase());
             Writable value = mapObj.get(columnKey);
             if (value == null) {
                 row.add(null);
@@ -61,8 +66,9 @@ public class JdbcSerDe  implements SerDe {
     @Override
     public void initialize(Configuration conf, Properties tbl)
             throws SerDeException {
+        LOG.info(" _____ jdbc inited " + tbl.toString());
         
-        if (!tbl.contains(HiveConfiguration.JDBC_DRIVER_CLASS)) {
+        if (!tbl.containsKey(HiveConfiguration.JDBC_DRIVER_CLASS)) {
             return ;
         }
         
@@ -72,12 +78,16 @@ public class JdbcSerDe  implements SerDe {
         String[] hiveColumns = hiveColumnStr.split(",");
         String[] hiveColumnTypes = hiveColumnTypeStr.split(":");
         
+        System.out.println("jdbc2hive " +   hiveColumnStr + " " + hiveColumnTypeStr);
+        
         numColumns = hiveColumns.length;
         if (numColumns == 0) {
+            LOG.error("can not get hive columns");
             throw new SerDeException("can not get hive columns");
         }
         
         if (numColumns != hiveColumnTypes.length) {
+            LOG.error("num of columns not equal num of column types " + hiveColumnStr + " " +  hiveColumnTypeStr);
             throw new SerDeException("num of columns not equal num of column types");
         }
         
@@ -96,6 +106,7 @@ public class JdbcSerDe  implements SerDe {
             fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
         }
         
+        row = new ArrayList<String>(numColumns);
         objectInspector =
                 ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnList,
                                                                         fieldInspectors);

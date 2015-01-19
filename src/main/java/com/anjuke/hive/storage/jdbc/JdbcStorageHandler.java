@@ -67,7 +67,7 @@ public class JdbcStorageHandler implements HiveStorageHandler {
 
     @Override
     public Class<? extends SerDe> getSerDeClass() {
-        return null;
+        return JdbcSerDe.class;
     }
 
 }
