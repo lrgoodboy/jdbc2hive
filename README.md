@@ -17,12 +17,12 @@ Usgage
 
 **Build**
 
-  $ git clone 
-  $ mvn clean package
+    $ git clone 
+    $ mvn clean package
 
 **Run query**
 
-  $ hive -e 'add jar target/{build-with-distribute.jar}; {your own query}'
+    $ hive -e 'add jar target/{build-with-distribute.jar}; {your own query}'
 
 
 Configuration 
