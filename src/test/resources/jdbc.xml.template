@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!-- jdbc configuration -->
+
+<configuration>
+    <property>
+        <name>jdbc2hive.jdbc.class</name>
+        <value>com.mysql.jdbc.Driver</value>
+        <description></description>
+    </property>
+
+    <property>
+        <name>jdbc2hive.jdbc.url</name>
+        <value>jdbc:mysql://localhost:3306/{database}?user={username}&amp;password={password}&amp;characterEncoding=utf8</value>
+        <description></description>
+    </property>
+
+    <property>
+        <name>jdbc2hive.table.name</name>
+        <value>place_info</value>
+        <description></description>
+    </property>
+
+    <property>
+        <name>jdbc2hive.splited.by</name>
+        <value>id</value>
+        <description></description>
+    </property>
+
+    <property>
+        <name></name>
+        <value></value>
+        <description></description>
+    </property>
+</configuration>

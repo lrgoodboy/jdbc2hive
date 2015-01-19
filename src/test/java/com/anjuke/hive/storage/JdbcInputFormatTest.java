@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Map.Entry;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.io.LongWritable;
@@ -29,15 +28,12 @@ public class JdbcInputFormatTest {
     
     @Before
     public void initConf() {
-        conf.set(HiveConfiguration.JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver");
-        conf.set(HiveConfiguration.JDBC_URL, "jdbc:mysql://localhost:3306/t_db?user=root&password=123456&characterEncoding=utf8");
-        conf.set(HiveConfiguration.TABLENAME, "place_info");
-        conf.set(HiveConfiguration.SPLITEDBY, "id");
-        conf.setInt("dfs.blocksize", 1* 1024*1024);
+        conf.addResource(Thread.currentThread().getContextClassLoader().getResourceAsStream("jdbc.xml"));
     }
     
     @Test
     public void testInput() throws IOException {
+        conf.setInt("dfs.blocksize", 1* 1024*1024);
         
         conf.set(org.apache.hadoop.hive.serde2.ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,1,2");
         conf.set(serdeConstants.LIST_COLUMNS, "hive_id, hive_lng, hive_lat");
@@ -53,8 +49,6 @@ public class JdbcInputFormatTest {
         JdbcInputSplit jdbcinput = null;
         for (InputSplit split: splits) {
             jdbcinput = (JdbcInputSplit) split;
-            
-            
             System.out.println(jdbcinput.getLowerCause() + " and " + jdbcinput.getUpperCause());
         }
         
@@ -70,6 +64,7 @@ public class JdbcInputFormatTest {
         }
     }
     
+    
     private String readFile(String fileName) {
         
         InputStream ins = Thread.currentThread().getContextClassLoader().getResourceAsStream(fileName);
@@ -78,11 +73,9 @@ public class JdbcInputFormatTest {
         
         try {
             bf = new BufferedReader(new InputStreamReader(ins, "utf-8"));
-        
             while ((tmp = bf.readLine()) != null) {
                 result += tmp;
             }
-            
             bf.close();
             ins.close();
         } catch (UnsupportedEncodingException e) {

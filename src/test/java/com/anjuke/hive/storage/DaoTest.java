@@ -25,8 +25,7 @@ public class DaoTest {
     @Before
     public void initDao() {
         Configuration conf = new Configuration();
-        conf.set(HiveConfiguration.JDBC_DRIVER_CLASS, "com.mysql.jdbc.Driver");
-        conf.set(HiveConfiguration.JDBC_URL, "jdbc:mysql://localhost:3306/t_db?user=root&password=123456&characterEncoding=utf8");
+        conf.addResource(Thread.currentThread().getContextClassLoader().getResourceAsStream("jdbc.xml"));
         
         dao = DaoFactory.getDao(conf);
     }
