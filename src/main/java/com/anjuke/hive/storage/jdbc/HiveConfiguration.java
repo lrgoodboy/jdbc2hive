@@ -24,8 +24,9 @@ public class HiveConfiguration {
     public final static String SPLITEDBY = "jdbc2hive.splited.by";
     public static final String JDBC_URL = "jdbc2hive.jdbc.url";
     public static final String JDBC_DRIVER_CLASS = "jdbc2hive.jdbc.class";
-    public static final String DBCP_CONFIG_PREFIX = "jdbc2hive.dhcp";
+    public static final String DBCP_CONFIG_PREFIX = "jdbc2hive.dbcp";
     public static final String COLUMN_MAP = "jdbc2hive.column.map";
+    public static final String TRIM_NEWLINE = "jdbc2hive.value.trimnewline";
     
     public static final Set<String> REQUIRED_CONF = new HashSet<String>();
     static {
@@ -90,6 +91,10 @@ public class HiveConfiguration {
     
     public long getBlockSize() {
         return conf.getLong("dfs.blocksize", 67108864);
+    }
+    
+    public boolean isTrimNewLine() {
+        return conf.getBoolean(TRIM_NEWLINE, true);
     }
     
     public ExprNodeDesc getExpNodeDesc () {

@@ -34,7 +34,6 @@ public class DaoTest {
     @Test
     public void testDao() {
         assertNotNull(dao);
-        System.out.println(NullWritable.get().toString());
     }
     
     @Test

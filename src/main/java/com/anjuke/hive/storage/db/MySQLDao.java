@@ -240,22 +240,33 @@ public class MySQLDao implements Dao {
         
         try {
             String boundField = "`" + bound.getField() + "`";
-            String sql = "(SELECT " + boundField 
+            String sql = "SELECT " + boundField 
                     + " FROM " + this.tableName + " " + buildWhere(getBaseCondition())
-                    + " ORDER BY " + boundField + " DESC LIMIT 1)"
-                    + " UNION ALL"
-                    + "(SELECT " + boundField 
-                    + " FROM " + this.tableName + " " + buildWhere(getBaseCondition())
-                    + " ORDER BY " + boundField + " ASC LIMIT 1)";
+                    + " ORDER BY " + boundField + " DESC LIMIT 1";
             LOG.info(sql);
             
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+            PreparedStatement ps ;
+            ResultSet rs ;
+            
+            // get upper bound.
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
             
             if (rs.next()) {
                 bound.setType(rs.getMetaData().getColumnType(1));
                 bound.setUpper(rs.getObject(1));
             }
+            
+            rs.close();
+            ps.close();
+            
+            // get lower bound.
+            sql =  "SELECT " + boundField 
+                    + " FROM " + this.tableName + " " + buildWhere(getBaseCondition())
+                    + " ORDER BY " + boundField + " ASC LIMIT 1";
+            LOG.info(sql);
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
             
             if (rs.next()) {
                 bound.setLower(rs.getObject(1));

@@ -31,6 +31,7 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
         super.readFields(in);
         lowerCause = Text.readString(in);
         upperCause = Text.readString(in);
+        length = in.readLong();
     }
 
     @Override
@@ -38,6 +39,7 @@ public class JdbcInputSplit extends FileSplit implements InputSplit {
         super.write(out);
         Text.writeString(out, lowerCause);
         Text.writeString(out, upperCause);
+        out.writeLong(length);
     }
 
     @Override

@@ -67,7 +67,7 @@ public class JdbcSerDe implements SerDe {
     @Override
     public void initialize(Configuration conf, Properties tbl)
             throws SerDeException {
-        LOG.info(" _____ jdbc inited " + tbl.toString());
+        LOG.debug("jdbc inited " + tbl.toString());
         
         if (!tbl.containsKey(HiveConfiguration.JDBC_DRIVER_CLASS)) {
             return ;
@@ -79,7 +79,7 @@ public class JdbcSerDe implements SerDe {
         String[] hiveColumns = hiveColumnStr.split(",");
         String[] hiveColumnTypes = hiveColumnTypeStr.split(":");
         
-        System.out.println("jdbc2hive " +   hiveColumnStr + " " + hiveColumnTypeStr);
+        LOG.debug("jdbc2hive " +   hiveColumnStr + " " + hiveColumnTypeStr);
         
         numColumns = hiveColumns.length;
         if (numColumns == 0) {

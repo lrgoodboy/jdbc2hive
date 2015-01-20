@@ -29,16 +29,12 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     }
 
     private JdbcInputSplit split;
-    
     private Configuration conf;
-    
     private Dao dao;
-    
     private Reporter reporter; 
-    
     private JdbcRecordIterator iterator;
-    
     private long pos = 0;
+    private boolean isTrimNewLine = true;
     
     @Override
     public boolean next(LongWritable key, MapWritable value) throws IOException {
@@ -53,6 +49,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
             dao.setSplit(split);
             
             iterator = dao.getRecordIterator();
+            isTrimNewLine = hiveConf.isTrimNewLine();
         }
         
         if (iterator.hasNext()) {
@@ -64,7 +61,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
                 for (Entry<String, String> entry : dbValues.entrySet()) {
                     // hive use lower case column names
                     Text _key = new Text(entry.getKey().toLowerCase());
-                    Writable _value = entry.getValue() == null  ? NullWritable.get() : new Text(entry.getValue());
+                    Writable _value = processValue(entry.getValue());
                     value.put(_key, _value);
                 }
                 
@@ -75,6 +72,20 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
         }
         
         return false;
+    }
+    
+    private Writable processValue(String value) {
+        if (value == null) {
+            return NullWritable.get();
+        }
+        
+        if (isTrimNewLine) {
+            value = value.replaceAll("\r|\n|\1", "");
+        } else {
+            value = value.replaceAll("\1", "");
+        }
+        
+        return new Text(value);
     }
 
     @Override
@@ -93,12 +104,20 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
 
     @Override
     public long getPos() throws IOException {
-        return 0;
+        return pos;
     }
 
     @Override
     public float getProgress() throws IOException {
-        return 0;
+        float progress;
+        if (split.getLength() <=0 ) {
+            progress = 0.0f;
+        } else {
+            progress = pos / split.getLength();
+            progress = progress > 1.0f ? 1.0f : progress;
+        }
+        
+        return progress;
     }
 
 }
