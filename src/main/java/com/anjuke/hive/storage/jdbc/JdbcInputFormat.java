@@ -46,18 +46,26 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         Path[] tablePaths = FileInputFormat.getInputPaths(conf);
         
         Splitter splitter = SplitterFactory.getSplitter(bound);
-        List<JdbcInputSplit> splits = splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize(), tablePaths);
+        if (splitter == null) {
+            return getOneInputSplit(totalRows, tablePaths[0]);
+        }
         
+        List<JdbcInputSplit> splits = splitter.getSplits(totalRows, rowLenth, bound, hiveConf.getBlockSize(), tablePaths);
         if (splits != null) {
             return (InputSplit[]) (splits.toArray(new InputSplit[splits.size()]));
         } else {
-            JdbcInputSplit split = new JdbcInputSplit(tablePaths[0]);
-            split.setLowerCause("");
-            split.setUpperCause("");
-            split.setLength(totalRows);
-            
-            return new InputSplit[]{split};
+            return getOneInputSplit(totalRows, tablePaths[0]);
         }
+    }
+    
+    
+    private InputSplit[] getOneInputSplit(long totalRows, Path path) {
+        JdbcInputSplit split = new JdbcInputSplit(path);
+        split.setLowerCause("");
+        split.setUpperCause("");
+        split.setLength(totalRows);
+        
+        return new InputSplit[]{split};
     }
 
 }

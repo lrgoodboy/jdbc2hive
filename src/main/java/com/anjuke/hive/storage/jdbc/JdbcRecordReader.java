@@ -80,9 +80,9 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
         }
         
         if (isTrimNewLine) {
-            value = value.replaceAll("\r|\n|\1", "");
+            value = value.replaceAll("\r|\n|\1", " ");
         } else {
-            value = value.replaceAll("\1", "");
+            value = value.replaceAll("\1", " ");
         }
         
         return new Text(value);

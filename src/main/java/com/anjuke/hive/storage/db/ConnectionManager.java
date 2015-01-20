@@ -44,7 +44,7 @@ public class ConnectionManager {
     private Properties getDBProps() {
         Properties props = new Properties();
         props.put("initialSize", "1");
-        props.put("maxActive", "5");
+        props.put("maxActive", "10");
         props.put("maxIdle", "1");
         props.put("maxWait", "10000");
         props.put("timeBetweenEvictionRunsMillis", "30000");
