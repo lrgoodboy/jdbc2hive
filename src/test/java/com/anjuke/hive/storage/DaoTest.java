@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,17 +27,14 @@ public class DaoTest {
     @Before
     public void initDao() {
         Configuration conf = new Configuration();
-        
         conf.addResource(DaoTest.class.getClassLoader().getResourceAsStream("jdbc.xml"));
-        
         dao = DaoFactory.getDao(conf);
     }
     
     @Test
     public void testDao() {
         assertNotNull(dao);
-        
-        System.out.println(100 % 1);
+        System.out.println(NullWritable.get().toString());
     }
     
     @Test

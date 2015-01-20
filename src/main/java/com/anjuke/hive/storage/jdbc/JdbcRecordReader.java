@@ -8,7 +8,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.InputSplit;
@@ -61,7 +63,9 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
                 
                 for (Entry<String, String> entry : dbValues.entrySet()) {
                     // hive use lower case column names
-                    value.put(new Text(entry.getKey().toLowerCase()), new Text(entry.getValue()));
+                    Text _key = new Text(entry.getKey().toLowerCase());
+                    Writable _value = entry.getValue() == null  ? NullWritable.get() : new Text(entry.getValue());
+                    value.put(_key, _value);
                 }
                 
                 return true;

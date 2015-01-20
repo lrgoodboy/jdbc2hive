@@ -16,12 +16,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSerDe  implements SerDe {
+public class JdbcSerDe implements SerDe {
     
     private StructObjectInspector objectInspector;
     private List<String> dbColumnNames;
@@ -43,7 +44,7 @@ public class JdbcSerDe  implements SerDe {
         for (int i = 0; i < numColumns; i++) {
             columnKey.set(dbColumnNames.get(i).toLowerCase());
             Writable value = mapObj.get(columnKey);
-            if (value == null) {
+            if (value == null || NullWritable.get().equals(value)) {
                 row.add(null);
             } else {
                 row.add(value.toString());

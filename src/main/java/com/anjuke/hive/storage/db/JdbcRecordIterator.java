@@ -51,9 +51,9 @@ public class JdbcRecordIterator {
                 String key = metadata.getColumnName(i);
                 String value = rs.getString(i);
                 
-                if (value == null) {
+                /*if (value == null) {
                     value = NullWritable.get().toString();
-                }
+                }*/
                 
                 record.put(key, value);
             }
