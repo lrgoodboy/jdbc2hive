@@ -4,14 +4,14 @@ jdbc2hive
 Feature
 ============
 
-  * Support push MySQL related condition in hive query to MySQL
+  * Support push DB related conditions in hive query to MySQL
   * Support fetch only required fields in MySQL to optimize performance
   * Support splited field to run multi maps
   * Use MySQL explain to estimate fetched rows
-  * Just support MySQL now.
+  * Just support MySQL now
 
 
-Usgage 
+Usage 
 ============
 
 
