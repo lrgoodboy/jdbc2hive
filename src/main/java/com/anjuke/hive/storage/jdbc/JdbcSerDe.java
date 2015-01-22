@@ -1,10 +1,11 @@
 package com.anjuke.hive.storage.jdbc;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -13,8 +14,10 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -26,8 +29,9 @@ public class JdbcSerDe implements SerDe {
     
     private StructObjectInspector objectInspector;
     private List<String> dbColumnNames;
-    private List<String> row;
+    private List<Object> row;
     private int numColumns;
+    private List<PrimitiveCategory> hiveColumnTypes;
     
     private static final Logger LOG = LoggerFactory.getLogger(JdbcSerDe.class);
 
@@ -47,7 +51,36 @@ public class JdbcSerDe implements SerDe {
             if (value == null || NullWritable.get().equals(value)) {
                 row.add(null);
             } else {
-                row.add(value.toString());
+                switch (hiveColumnTypes.get(i)) {
+                case BOOLEAN:
+                    row.add(Boolean.valueOf(value.toString()));
+                    break;
+                case BYTE:
+                    row.add(Integer.valueOf(value.toString()).byteValue());
+                    break;
+                case DECIMAL:
+                    row.add(new BigDecimal(value.toString()));
+                    break;
+                case DOUBLE:
+                    row.add(Double.valueOf(value.toString()));
+                    break;
+                case FLOAT:
+                    row.add(Float.valueOf(value.toString()));
+                    break;
+                case INT:
+                    row.add(Integer.valueOf(value.toString()));
+                    break;
+                case LONG:
+                    row.add(Long.valueOf(value.toString()));
+                    break;
+                case SHORT:
+                    row.add(Integer.valueOf(value.toString()).shortValue());
+                    break;
+                case STRING:
+                default:
+                    row.add(value.toString());
+                    break;
+                }
             }
         }
 
@@ -77,7 +110,7 @@ public class JdbcSerDe implements SerDe {
         String hiveColumnTypeStr = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
         
         String[] hiveColumns = hiveColumnStr.split(",");
-        String[] hiveColumnTypes = hiveColumnTypeStr.split(":");
+        String[] hiveColumnTypeStrs = hiveColumnTypeStr.split(":");
         
         LOG.debug("jdbc2hive " +   hiveColumnStr + " " + hiveColumnTypeStr);
         
@@ -87,7 +120,7 @@ public class JdbcSerDe implements SerDe {
             throw new SerDeException("can not get hive columns");
         }
         
-        if (numColumns != hiveColumnTypes.length) {
+        if (numColumns != hiveColumnTypeStrs.length) {
             LOG.error("num of columns not equal num of column types " + hiveColumnStr + " " +  hiveColumnTypeStr);
             throw new SerDeException("num of columns not equal num of column types");
         }
@@ -102,12 +135,22 @@ public class JdbcSerDe implements SerDe {
         dbColumnNames = HiveConfiguration.getInstance(conf).getDBSelectFields(hiveColumnList);
         
         List<ObjectInspector> fieldInspectors = new ArrayList<ObjectInspector>(numColumns);
+        hiveColumnTypes = new ArrayList<PrimitiveCategory>(numColumns);
+        
         for (int i = 0; i < numColumns; i++) {
-            // all use string is not a good solution.
-            fieldInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+            String typeName = hiveColumnTypeStrs[i];
+            PrimitiveCategory type = null;
+            try {
+                type = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveCategory;
+                hiveColumnTypes.add(type);
+            } catch (Exception e) {
+                throw new SerDeException(typeName + " is not supported!");
+            }
+            
+            fieldInspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(type));
         }
         
-        row = new ArrayList<String>(numColumns);
+        row = new ArrayList<Object>(numColumns);
         objectInspector =
                 ObjectInspectorFactory.getStandardStructObjectInspector(hiveColumnList,
                                                                         fieldInspectors);

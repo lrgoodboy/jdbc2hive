@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputSplit;
 import org.junit.Before;
@@ -34,6 +36,21 @@ public class DaoTest {
     @Test
     public void testDao() {
         assertNotNull(dao);
+    }
+    
+    @Test
+    public void testHive() {
+        PrimitiveCategory category;
+        
+        category = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName("int").primitiveCategory;
+        switch (category) {
+        case INT :
+            System.out.println("int found ");
+            break;
+        default:
+            break;
+        }
+        
     }
     
     @Test

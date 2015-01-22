@@ -34,7 +34,6 @@ public class HiveConfiguration {
         REQUIRED_CONF.add(SPLITEDBY);
         REQUIRED_CONF.add(JDBC_URL);
         REQUIRED_CONF.add(JDBC_DRIVER_CLASS);
-        
     }
     
     private Configuration conf;
