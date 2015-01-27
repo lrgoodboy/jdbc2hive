@@ -31,7 +31,7 @@ Configuration
 **Required**
 
   * `jdbc2hive.table.name` table name
-  * `jdbc2hive.splited.by` splited by
+  * `jdbc2hive.splited.by` field in table used by spliting to many maps, just support int, bigint, timestamp now
   * `jdbc2hive.jdbc.url` jdbc url configuration
   * `jdbc2hive.jdbc.class` jdbc class, just support `com.mysql.jdbc.Driver`
 
@@ -44,3 +44,32 @@ Example
 ============
 
 
+**Create table**
+
+```
+ADD JAR jdbc2hive.jar;
+
+CREATE EXTERNAL TABLE if not exists jdbc2hive_example
+(
+ hive_id INT,
+ name STRING,
+ description STRING
+)
+STORED BY 'com.anjuke.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "jdbc2hive.jdbc.url" = "jdbc:mysql://127.0.0.1:3306/test_db?user=test&password=test&characterEncoding=utf8",
+    "jdbc2hive.jdbc.class" = "com.mysql.jdbc.Driver",
+    "jdbc2hive.splited.by" = "id",
+    "jdbc2hive.table.name" = "test_table",
+    "jdbc2hive.column.map" = "hive_id=id"
+);
+        
+```
+
+**Usage**
+
+```
+ADD JAR jdbc2hive.jar;
+
+SELECT COUNT(*) from jdbc2hive_example;
+```
