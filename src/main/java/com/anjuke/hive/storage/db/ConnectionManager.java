@@ -16,32 +16,31 @@ import com.anjuke.hive.storage.jdbc.HiveConfiguration;
 
 public class ConnectionManager {
     
-    private Configuration conf;
-    
     private DataSource dbcpDataSource = null;
     
-    private static HashMap<Configuration, ConnectionManager> instances 
-        = new HashMap<Configuration, ConnectionManager>();
+    private static HashMap<String, ConnectionManager> instances 
+        = new HashMap<String, ConnectionManager>();
     
     public static ConnectionManager getInstance(Configuration conf) {
-        if (instances.get(conf) == null) {
-            instances.put(conf, new ConnectionManager(conf));
+        Properties props = getDBProps(conf);
+        String propsStr = props.toString();
+        
+        if (instances.get(propsStr) == null) {
+            instances.put(propsStr, new ConnectionManager(props));
         }
         
-        return instances.get(conf); 
+        return instances.get(propsStr); 
     }
     
-    private ConnectionManager(Configuration conf) {
-        this.conf = conf;
-        
+    private ConnectionManager(Properties props) {
         try {
-            dbcpDataSource = BasicDataSourceFactory.createDataSource(getDBProps());
+            dbcpDataSource = BasicDataSourceFactory.createDataSource(props);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
-    private Properties getDBProps() {
+    private static Properties getDBProps(Configuration conf) {
         Properties props = new Properties();
         props.put("initialSize", "1");
         props.put("maxActive", "10");
