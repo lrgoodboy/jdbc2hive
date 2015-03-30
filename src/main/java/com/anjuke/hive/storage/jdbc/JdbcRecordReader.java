@@ -21,7 +21,7 @@ import com.anjuke.hive.storage.db.JdbcRecordIterator;
 import com.anjuke.hive.storage.parser.NodeProcessor;
 
 public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>  {
-    
+
     public JdbcRecordReader(InputSplit split, Configuration conf, Reporter reporter) {
         this.split = (JdbcInputSplit) split;
         this.conf = conf;
@@ -31,11 +31,11 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
     private JdbcInputSplit split;
     private Configuration conf;
     private Dao dao;
-    private Reporter reporter; 
+    private Reporter reporter;
     private JdbcRecordIterator iterator;
     private long pos = 0;
     private boolean isTrimNewLine = true;
-    
+
     @Override
     public boolean next(LongWritable key, MapWritable value) throws IOException {
         // use split to generate RecorderReader to read data
@@ -47,44 +47,44 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
             dao.setConditionNode(hiveConf.getExpNodeDesc(), hiveConf.getColumnMap());
             dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
             dao.setSplit(split);
-            
+
             iterator = dao.getRecordIterator();
             isTrimNewLine = hiveConf.isTrimNewLine();
         }
-        
+
         if (iterator.hasNext()) {
             Map<String, String> dbValues = iterator.next();
-            
+
             if ((dbValues != null) && (!dbValues.isEmpty())) {
                 key.set(++pos);
-                
+
                 for (Entry<String, String> entry : dbValues.entrySet()) {
                     // hive use lower case column names
                     Text _key = new Text(entry.getKey().toLowerCase());
                     Writable _value = processValue(entry.getValue());
                     value.put(_key, _value);
                 }
-                
+
                 return true;
             }
-            
+
             return false;
         }
-        
+
         return false;
     }
-    
+
     private Writable processValue(String value) {
         if (value == null) {
             return NullWritable.get();
         }
-        
+
         if (isTrimNewLine) {
-            value = value.replaceAll("\r|\n|\1", " ");
+            value = value.replaceAll("\r|\t|\n|\1", " ");
         } else {
             value = value.replaceAll("\1", " ");
         }
-        
+
         return new Text(value);
     }
 
@@ -116,7 +116,7 @@ public class JdbcRecordReader implements RecordReader<LongWritable, MapWritable>
             progress = pos / split.getLength();
             progress = progress > 1.0f ? 1.0f : progress;
         }
-        
+
         return progress;
     }
 
