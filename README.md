@@ -57,7 +57,7 @@ CREATE EXTERNAL TABLE if not exists jdbc2hive_example
 )
 STORED BY 'com.anjuke.hive.storage.jdbc.JdbcStorageHandler'
 TBLPROPERTIES (
-    "jdbc2hive.jdbc.url" = "jdbc:mysql://127.0.0.1:3306/test_db?user=test&password=test&characterEncoding=utf8",
+    "jdbc2hive.jdbc.url" = "jdbc:mysql://127.0.0.1:3306/test_db?user=test&password=test&characterEncoding=utf8&tinyInt1isBit=false&zeroDateTimeBehavior=convertToNull",
     "jdbc2hive.jdbc.class" = "com.mysql.jdbc.Driver",
     "jdbc2hive.splited.by" = "id",
     "jdbc2hive.table.name" = "test_table",

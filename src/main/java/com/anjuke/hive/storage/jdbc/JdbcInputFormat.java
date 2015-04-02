@@ -34,7 +34,7 @@ public class JdbcInputFormat  extends HiveInputFormat<LongWritable, MapWritable>
         Dao dao = DaoFactory.getDao(conf);
         
         dao.setConditionNode(hiveConf.getExpNodeDesc(), hiveConf.getColumnMap());
-        dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns()));
+        dao.setSelectFields(hiveConf.getDBSelectFields(hiveConf.getHiveSelectedColumns(), false));
         dao.setTableName(hiveConf.getTableName());
         
         Bound bound = new Bound(hiveConf.getSplitedBy());

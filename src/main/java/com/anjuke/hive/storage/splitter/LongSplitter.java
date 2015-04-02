@@ -22,8 +22,11 @@ public class LongSplitter implements Splitter {
             totalRows = upper - lower;
         }
         
-        int numSplits = (int) (totalRows * rowLenth / blockSize);
-        if (numSplits <= 1) {
+        int numSplits = (int) Math.round(totalRows * rowLenth * 1.0 / blockSize);
+        // one map per million records. 
+        numSplits = (int) Math.max(numSplits, Math.round(totalRows / 1000000.0));
+        
+        if (numSplits < 1) {
             numSplits = 1;
         }
         

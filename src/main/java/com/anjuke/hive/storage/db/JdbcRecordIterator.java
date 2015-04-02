@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.io.NullWritable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JdbcRecordIterator {
     
@@ -21,6 +23,8 @@ public class JdbcRecordIterator {
     private ResultSetMetaData metadata;
 
     private int numColumns;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcRecordIterator.class);
     
     public JdbcRecordIterator(Connection conn, PreparedStatement ps, ResultSet rs) {
         this.conn = conn;
@@ -50,7 +54,6 @@ public class JdbcRecordIterator {
             for (int i = 1; i <= numColumns; i++) {
                 String key = metadata.getColumnName(i);
                 String value = rs.getString(i);
-                
                 /*if (value == null) {
                     value = NullWritable.get().toString();
                 }*/
@@ -60,6 +63,7 @@ public class JdbcRecordIterator {
 
             return record;
         } catch (Exception e) {
+            LOG.error(e.getMessage());
             return null;
         }
     }

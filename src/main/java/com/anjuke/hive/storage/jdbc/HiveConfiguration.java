@@ -54,12 +54,20 @@ public class HiveConfiguration {
     }
     
     public List<String> getDBSelectFields(List<String> hiveColumns) {
+        // hive columns is empty, return default splited by field.
+        return getDBSelectFields(hiveColumns, true);
+    }
+    
+    public List<String> getDBSelectFields(List<String> hiveColumns, boolean returnDefaultField) {
         List<String> dbFields = null;
         
-        // hive columns is empty, return default splited by field.
         if (hiveColumns == null || hiveColumns.isEmpty()) {
-            dbFields = new ArrayList<String>(1);
-            dbFields.add(conf.get(SPLITEDBY));
+            if (returnDefaultField) {
+                dbFields = new ArrayList<String>(1);
+                dbFields.add(conf.get(SPLITEDBY));
+            } else {
+                return null;
+            }
         } else {
             Map<String, String> columnMap = getColumnMap();
             if (columnMap == null || columnMap.isEmpty()) {

@@ -82,6 +82,11 @@ public class MySQLDao implements Dao {
     public void setSelectFields(List<String> fields) {
         selectFields = fields;
         
+        if (fields == null || fields.isEmpty()) {
+            this.selectFieldsStr =  "*";
+            return;
+        }
+        
         String selectFieldsStr = "";
         for (String field : fields) {
             if (!selectFieldsStr.isEmpty()) {
